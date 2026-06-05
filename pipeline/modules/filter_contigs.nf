@@ -19,4 +19,10 @@ process FILTER_CONTIGS {
         ${contigs} \
         2> ${sample_id}_filter_contigs.log
     """
+
+    stub:
+    """
+    touch ${sample_id}_filtered.fna
+    touch ${sample_id}_filter_contigs.log
+    """
 }

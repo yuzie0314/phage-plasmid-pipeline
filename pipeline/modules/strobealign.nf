@@ -21,4 +21,10 @@ process STROBEALIGN {
         2> ${sample_id}_strobealign.log \
     | samtools view -bS -o ${sample_id}.bam
     """
+
+    stub:
+    """
+    touch ${sample_id}.bam
+    touch ${sample_id}_strobealign.log
+    """
 }

@@ -1,0 +1,28 @@
+nextflow_process {
+    name "Test SAMTOOLS_FLAGSTAT"
+    script "pipeline/modules/samtools_flagstat.nf"
+    process "SAMTOOLS_FLAGSTAT"
+    config "pipeline/conf/test.config"
+
+    test("stub: flagstat txt output correct name") {
+        options "-stub"
+
+        when {
+            params {
+                outdir = "${outputDir}"
+            }
+            process {
+                """
+                input[0] = ['sample_test', file('fake_sorted.bam'), file('fake_sorted.bam.bai')]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.txt.size() == 1
+            assert process.out.txt[0][0] == 'sample_test'
+            assert path(process.out.txt[0][1]).name == 'sample_test_flagstat.txt'
+        }
+    }
+}

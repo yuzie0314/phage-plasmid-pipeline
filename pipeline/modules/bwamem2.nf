@@ -21,4 +21,10 @@ process BWAMEM2 {
         2> ${sample_id}_bwamem2.log \
     | samtools view -bS -o ${sample_id}.bam
     """
+
+    stub:
+    """
+    touch ${sample_id}.bam
+    touch ${sample_id}_bwamem2.log
+    """
 }

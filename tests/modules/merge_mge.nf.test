@@ -1,0 +1,34 @@
+nextflow_process {
+    name "Test MERGE_MGE"
+    script "pipeline/modules/merge_mge.nf"
+    process "MERGE_MGE"
+    config "pipeline/conf/test.config"
+
+    test("stub: merged output has correct name") {
+        options "-stub"
+
+        when {
+            params {
+                outdir = "${outputDir}"
+            }
+            process {
+                """
+                input[0] = [
+                    'sample_test',
+                    file('${projectDir}/tests/data/fasta/test_contigs.fna'),
+                    file('${projectDir}/tests/data/fasta/test_contigs.fna')
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.merged.size() == 1
+            assert process.out.merged[0][0] == 'sample_test'
+            assert path(process.out.merged[0][1]).name == 'sample_test_mge_merged.fna'
+            assert process.out.log.size() == 1
+            assert path(process.out.log[0]).name == 'sample_test_merge_mge.log'
+        }
+    }
+}

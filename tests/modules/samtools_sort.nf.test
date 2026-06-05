@@ -1,0 +1,31 @@
+nextflow_process {
+    name "Test SAMTOOLS_SORT"
+    script "pipeline/modules/samtools_sort.nf"
+    process "SAMTOOLS_SORT"
+    config "pipeline/conf/test.config"
+
+    test("stub: outputs sorted bam and bai") {
+        options "-stub"
+
+        when {
+            params {
+                outdir = "${outputDir}"
+            }
+            process {
+                """
+                input[0] = ['sample_test', file('fake.bam')]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.sorted_bam.size() == 1
+            def (sid, bam, bai) = process.out.sorted_bam[0]
+            assert sid == 'sample_test'
+            assert path(bam).name == 'sample_test_sorted.bam'
+            assert path(bai).name == 'sample_test_sorted.bam.bai'
+            assert process.out.log.size() == 1
+        }
+    }
+}

@@ -29,4 +29,10 @@ process COVERM_PLASMID {
     head -1 plasmid_abundance_raw.tsv > plasmid_abundance.tsv
     grep -i 'plasmid' plasmid_abundance_raw.tsv >> plasmid_abundance.tsv || true
     """
+
+    stub:
+    """
+    touch plasmid_abundance.tsv
+    touch coverm_plasmid.log
+    """
 }

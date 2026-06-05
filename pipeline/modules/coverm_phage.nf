@@ -29,4 +29,10 @@ process COVERM_PHAGE {
     head -1 phage_abundance_raw.tsv > phage_abundance.tsv
     grep -i 'virus\|phage' phage_abundance_raw.tsv >> phage_abundance.tsv || true
     """
+
+    stub:
+    """
+    touch phage_abundance.tsv
+    touch coverm_phage.log
+    """
 }

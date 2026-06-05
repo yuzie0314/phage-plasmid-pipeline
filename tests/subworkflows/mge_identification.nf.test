@@ -1,0 +1,65 @@
+nextflow_workflow {
+    name "Test MGE_IDENTIFICATION"
+    script "pipeline/subworkflows/mge_identification.nf"
+    workflow "MGE_IDENTIFICATION"
+    config "pipeline/conf/test.config"
+
+    test("stub: emits mge_index, mge_fna, phage_fna, plasmid_fna") {
+        options "-stub"
+
+        when {
+            params {
+                min_contig_length      = 4000
+                aligner                = 'bwamem2'
+                run_provirus           = false
+                outdir                 = "${outputDir}"
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    'sample_test',
+                    file('${projectDir}/tests/data/fasta/test_contigs.fna')
+                ])
+                input[1] = file('${projectDir}/tests/data/fasta')   // genomad_db placeholder
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.out.mge_index.size()   == 1
+            assert workflow.out.mge_fna.size()     == 1
+            assert workflow.out.phage_fna.size()   == 1
+            assert workflow.out.plasmid_fna.size() == 1
+            assert workflow.out.mge_fna[0][0]      == 'sample_test'
+        }
+    }
+
+    test("stub: auto aligner defaults to bwamem2 index") {
+        options "-stub"
+
+        when {
+            params {
+                min_contig_length = 4000
+                aligner           = 'auto'
+                run_provirus      = false
+                outdir            = "${outputDir}"
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    'sample_auto',
+                    file('${projectDir}/tests/data/fasta/test_contigs.fna')
+                ])
+                input[1] = file('${projectDir}/tests/data/fasta')
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            // auto resolves to bwamem2 at identification time
+            assert workflow.out.mge_index[0][2] == 'bwamem2'
+        }
+    }
+}

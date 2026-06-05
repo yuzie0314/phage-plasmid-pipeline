@@ -1,0 +1,65 @@
+nextflow_process {
+    name "Test BUILD_INDEX"
+    script "pipeline/modules/build_index.nf"
+    process "BUILD_INDEX"
+    config "pipeline/conf/test.config"
+
+    test("stub: strobealign aligner produces index fna") {
+        options "-stub"
+
+        when {
+            params { outdir = "${outputDir}" }
+            process {
+                """
+                input[0] = ['sample_test', file('${projectDir}/tests/data/fasta/test_contigs.fna')]
+                input[1] = 'strobealign'
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.index.size() == 1
+            assert process.out.index[0][0] == 'sample_test'
+            assert process.out.index[0][2] == 'strobealign'
+        }
+    }
+
+    test("stub: bwamem2 aligner") {
+        options "-stub"
+
+        when {
+            params { outdir = "${outputDir}" }
+            process {
+                """
+                input[0] = ['sample_test', file('${projectDir}/tests/data/fasta/test_contigs.fna')]
+                input[1] = 'bwamem2'
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.index[0][2] == 'bwamem2'
+        }
+    }
+
+    test("stub: bowtie2 aligner") {
+        options "-stub"
+
+        when {
+            params { outdir = "${outputDir}" }
+            process {
+                """
+                input[0] = ['sample_test', file('${projectDir}/tests/data/fasta/test_contigs.fna')]
+                input[1] = 'bowtie2'
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.index[0][2] == 'bowtie2'
+        }
+    }
+}

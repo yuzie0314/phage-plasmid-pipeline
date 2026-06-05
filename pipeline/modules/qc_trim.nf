@@ -25,4 +25,12 @@ process QC_TRIM {
         --detect_adapter_for_pe \
         2> ${sample_id}_fastp.log
     """
+
+    stub:
+    """
+    touch ${sample_id}_trimmed_R1.fastq.gz
+    touch ${sample_id}_trimmed_R2.fastq.gz
+    touch ${sample_id}_fastp.json
+    touch ${sample_id}_fastp.log
+    """
 }

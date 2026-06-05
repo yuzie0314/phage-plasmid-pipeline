@@ -17,4 +17,9 @@ process SAMTOOLS_FLAGSTAT {
         ${sorted_bam} \
         > ${sample_id}_flagstat.txt
     """
+
+    stub:
+    """
+    touch ${sample_id}_flagstat.txt
+    """
 }

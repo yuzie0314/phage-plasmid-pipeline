@@ -31,4 +31,10 @@ process BUILD_INDEX {
             ${mge_fna} ${sample_id}_mge_index \
             2> ${sample_id}_build_index.log
         """
+
+    stub:
+    """
+    touch ${sample_id}_mge_index.fna
+    touch ${sample_id}_build_index.log
+    """
 }

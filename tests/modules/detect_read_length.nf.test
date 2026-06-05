@@ -1,0 +1,35 @@
+nextflow_process {
+    name "Test DETECT_READ_LENGTH"
+    script "pipeline/modules/detect_read_length.nf"
+    process "DETECT_READ_LENGTH"
+    config "pipeline/conf/test.config"
+
+    test("stub: emits avg_len env var and log file") {
+        options "-stub"
+
+        when {
+            params {
+                outdir = "${outputDir}"
+            }
+            process {
+                """
+                input[0] = [
+                    'sample_test',
+                    file('${projectDir}/tests/data/fastq/test_R1.fastq.gz'),
+                    file('${projectDir}/tests/data/fastq/test_R2.fastq.gz')
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.read_length.size() == 1
+            assert process.out.read_length[0][0] == 'sample_test'
+            // stub emits avg_len as a string env var
+            assert process.out.read_length[0][1] != null
+            assert process.out.log.size() == 1
+            assert path(process.out.log[0]).name == 'sample_test_read_length.log'
+        }
+    }
+}

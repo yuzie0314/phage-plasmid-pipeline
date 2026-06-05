@@ -16,4 +16,10 @@ process DETECT_READ_LENGTH {
     avg_len=\$(seqkit head -n 200000 ${r1} | seqkit stats -T | awk 'NR==2{print int(\$7)}')
     echo "${sample_id}\t\${avg_len}" > ${sample_id}_read_length.log
     """
+
+    stub:
+    """
+    avg_len=150
+    echo "${sample_id}\t\${avg_len}" > ${sample_id}_read_length.log
+    """
 }

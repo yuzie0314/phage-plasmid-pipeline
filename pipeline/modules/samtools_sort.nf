@@ -20,4 +20,11 @@ process SAMTOOLS_SORT {
         2> ${sample_id}_samtools_sort.log
     samtools index ${sample_id}_sorted.bam 2>> ${sample_id}_samtools_sort.log
     """
+
+    stub:
+    """
+    touch ${sample_id}_sorted.bam
+    touch ${sample_id}_sorted.bam.bai
+    touch ${sample_id}_samtools_sort.log
+    """
 }

@@ -34,4 +34,11 @@ process REMOVE_HOST_READS {
 
     rm -f r1.fastq r2.fastq host_removed_1.fastq host_removed_2.fastq
     """
+
+    stub:
+    """
+    touch ${sample_id}_hostfree_R1.fastq.gz
+    touch ${sample_id}_hostfree_R2.fastq.gz
+    touch ${sample_id}_bmtagger.log
+    """
 }

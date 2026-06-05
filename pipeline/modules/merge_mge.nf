@@ -19,4 +19,10 @@ process MERGE_MGE {
         > ${sample_id}_merge_mge.log
     seqkit stats -T ${sample_id}_mge_merged.fna >> ${sample_id}_merge_mge.log
     """
+
+    stub:
+    """
+    touch ${sample_id}_mge_merged.fna
+    touch ${sample_id}_merge_mge.log
+    """
 }

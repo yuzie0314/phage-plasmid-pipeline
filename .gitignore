@@ -17,6 +17,18 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
+# Generated test data (created by tests/generate_test_data.py)
+tests/data/fasta/*.fna
+tests/data/fastq/*.fastq.gz
+tests/data/samplesheets/valid.csv
+
+# nf-test work directory
+.nf-test/
+
+# pytest cache
+.pytest_cache/
+.coverage
+
 # OS
 .DS_Store
 Thumbs.db

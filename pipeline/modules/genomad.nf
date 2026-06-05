@@ -46,4 +46,14 @@ process GENOMAD {
     find genomad_out -name '*plasmid.fna'          | head -1 | xargs -I{} cp {} ${sample_id}_plasmid_sequences.fna
     find genomad_out -name '*annotation*'          | head -1 | xargs -I{} cp {} ${sample_id}_genomad_annotation.tsv
     """
+
+    stub:
+    """
+    touch ${sample_id}_virus_sequences.fna
+    touch ${sample_id}_plasmid_sequences.fna
+    touch ${sample_id}_virus_summary.tsv
+    touch ${sample_id}_plasmid_summary.tsv
+    touch ${sample_id}_genomad_annotation.tsv
+    touch ${sample_id}_genomad.log
+    """
 }

@@ -1,0 +1,58 @@
+nextflow_process {
+    name "Test FILTER_CONTIGS"
+    script "pipeline/modules/filter_contigs.nf"
+    process "FILTER_CONTIGS"
+    config "pipeline/conf/test.config"
+
+    test("stub: correct output filenames for sample_id") {
+        options "-stub"
+
+        when {
+            params {
+                min_contig_length = 4000
+                outdir = "${outputDir}"
+            }
+            process {
+                """
+                input[0] = [
+                    'sample_test',
+                    file('${projectDir}/tests/data/fasta/test_contigs.fna')
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.filtered.size() == 1
+            assert process.out.filtered[0][0] == 'sample_test'
+            assert path(process.out.filtered[0][1]).name == 'sample_test_filtered.fna'
+            assert process.out.log.size() == 1
+            assert path(process.out.log[0]).name == 'sample_test_filter_contigs.log'
+        }
+    }
+
+    test("stub: multiple samples emit independently") {
+        options "-stub"
+
+        when {
+            params {
+                min_contig_length = 4000
+                outdir = "${outputDir}"
+            }
+            process {
+                """
+                input[0] = Channel.of(
+                    ['sample_A', file('${projectDir}/tests/data/fasta/test_contigs.fna')],
+                    ['sample_B', file('${projectDir}/tests/data/fasta/test_contigs.fna')]
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.filtered.size() == 2
+        }
+    }
+}

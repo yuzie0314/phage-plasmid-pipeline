@@ -1,0 +1,2 @@
+sample_id,fastq_1,contigs
+sample_A,/data/A_R1.fastq.gz,/data/A_contigs.fna
