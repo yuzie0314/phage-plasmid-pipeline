@@ -22,8 +22,9 @@ tests/data/fasta/*.fna
 tests/data/fastq/*.fastq.gz
 tests/data/samplesheets/valid.csv
 
-# nf-test work directory
+# nf-test work and cache directories
 .nf-test/
+nf-test.log
 
 # pytest cache
 .pytest_cache/

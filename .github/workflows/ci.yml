@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ── Job 1: Python unit tests for validate_samplesheet.py ─────────────────
+  pytest:
+    name: pytest (validate_samplesheet)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run pytest
+        run: pytest tests/validate_samplesheet/ -v --tb=short
+
+  # ── Job 2: nf-test stub — channel logic without Singularity ──────────────
+  nf-test-stub:
+    name: nf-test stub (modules + subworkflows)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nextflow
+        uses: nf-core/setup-nextflow@v2
+        with:
+          version: '23.10.1'
+
+      - name: Install nf-test
+        run: |
+          wget -qO- https://get.nf-test.com | bash
+          echo "$HOME/.nf-test/bin" >> $GITHUB_PATH
+
+      - name: Generate synthetic test data
+        run: python3 tests/generate_test_data.py
+
+      - name: nf-test — modules (stub)
+        run: nf-test test tests/modules/
+
+      - name: nf-test — subworkflows (stub)
+        run: nf-test test tests/subworkflows/

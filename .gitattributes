@@ -7,4 +7,5 @@
 *.csv       text eol=lf
 *.md        text eol=lf
 *.drawio    text eol=lf
+*.yml       text eol=lf
 .gitignore  text eol=lf
