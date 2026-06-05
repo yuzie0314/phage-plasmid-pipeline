@@ -8,24 +8,7 @@ A **Nextflow + Singularity** subworkflow for detecting bacteriophage and plasmid
 
 ## Pipeline Overview
 
-```
-Samplesheet (sample_id, fastq_1, fastq_2, contigs)
-      │
-      ├── IDENTIFICATION (per sample)
-      │     FILTER_CONTIGS (≥4000 bp)
-      │         └── GENOMAD → phage / plasmid / provirus sequences
-      │               └── MERGE_MGE → BUILD_INDEX
-      │
-      └── ABUNDANCE (per sample → all samples)
-            reads_mode:  raw | host_removed | trimmed_host_removed
-                └── DETECT_READ_LENGTH → auto-select aligner
-                      ├── ≥150 bp → STROBEALIGN
-                      ├── ≥100 bp → BWAMEM2
-                      └──  <100 bp → BOWTIE2
-                            └── SAMTOOLS_SORT + SAMTOOLS_FLAGSTAT
-                                  └── COVERM_PHAGE (id=0.85)
-                                      COVERM_PLASMID (id=0.90)
-```
+![Pipeline Overview](docs/phage_plasmid_pipeline.png)
 
 ---
 
