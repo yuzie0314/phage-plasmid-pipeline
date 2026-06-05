@@ -1,13 +1,15 @@
 process REMOVE_HOST_READS {
     tag "${sample_id}"
-    label 'high'   // hg38 bitmask ~24 GB RAM
+    label 'high'   // hg38 bitmask index loading requires ~24 GB RAM
 
     publishDir "${params.outdir}/logs", mode: 'copy', pattern: '*.log'
 
     input:
     tuple val(sample_id), path(r1), path(r2)
-    path bitmask_dir   // NFS path: directory containing .bitmask files
-    path srprism_dir   // NFS path: directory containing .srprism files
+    // val inputs: paths are NOT staged into work dir (NFS files stay in place)
+    // Singularity accesses them via bind mount (autoMounts or params.singularity_bind_paths)
+    val bitmask_file    // absolute path to hg38.bitmask FILE
+    val srprism_prefix  // absolute path to srprism index PREFIX (e.g. /nfs/hg38_bmtagger/hg38.srprism)
 
     output:
     tuple val(sample_id), path("${sample_id}_hostfree_R1.fastq.gz"), path("${sample_id}_hostfree_R2.fastq.gz"), emit: host_removed
@@ -20,8 +22,8 @@ process REMOVE_HOST_READS {
     zcat ${r2} > r2.fastq
 
     bmtagger.sh \
-        -b ${bitmask_dir}/${bitmask_dir.name}.bitmask \
-        -x ${srprism_dir}/${srprism_dir.name}.srprism \
+        -b ${bitmask_file} \
+        -x ${srprism_prefix} \
         -T tmp_bmtagger \
         -q 1 \
         -1 r1.fastq \

@@ -10,8 +10,14 @@ def validate_params() {
     if (!params.genomad_db)  error "ERROR: --genomad_db is required"
 
     if (params.reads_mode in ['host_removed', 'trimmed_host_removed']) {
-        if (!params.host_genome_bitmask) error "ERROR: --host_genome_bitmask required for reads_mode '${params.reads_mode}'"
-        if (!params.host_genome_srprism) error "ERROR: --host_genome_srprism required for reads_mode '${params.reads_mode}'"
+        if (!params.host_genome_bitmask)
+            error "ERROR: --host_genome_bitmask required for reads_mode '${params.reads_mode}'\n" +
+                  "       Provide the absolute path to the .bitmask FILE, e.g. /nfs/hg38_bmtagger/hg38.bitmask"
+        if (!params.host_genome_srprism)
+            error "ERROR: --host_genome_srprism required for reads_mode '${params.reads_mode}'\n" +
+                  "       Provide the srprism index PREFIX (no extension), e.g. /nfs/hg38_bmtagger/hg38.srprism"
+        if (!file(params.host_genome_bitmask).exists())
+            error "ERROR: --host_genome_bitmask file not found: ${params.host_genome_bitmask}"
     }
 
     def valid_modes    = ['raw', 'host_removed', 'trimmed_host_removed']

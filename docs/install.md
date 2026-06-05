@@ -200,29 +200,52 @@ Pass to the pipeline: `--genomad_db /nfs/databases/genomad_db/`
 
 ### hg38 bmtagger index (only when `reads_mode != 'raw'`)
 
+The pipeline needs two separate index types built from the same hg38 reference.
+Both are accessed as NFS paths inside Singularity — they are **never copied** into
+the Nextflow work directory.
+
 ```bash
-# 1. Download hg38 (use your preferred source, e.g. UCSC or NCBI)
-#    Assumes hg38.fa is already available at /nfs/databases/hg38/hg38.fa
+# Assumes hg38.fa is already available at /nfs/databases/hg38/hg38.fa
+# You need ~40 GB free disk space and ~24 GB RAM for the bitmask step.
 
-# 2. Build bitmask index (~24 GB RAM required)
-singularity exec $SIF_DIR/bmtagger_3.306.sif \
-    bmtool -d /nfs/databases/hg38/hg38.fa \
-           -o /nfs/databases/hg38_bmtagger/hg38.bitmask \
-           -A 0 -w 18
+BMTAGGER_DIR=/nfs/databases/hg38_bmtagger
+mkdir -p $BMTAGGER_DIR
 
-# 3. Build srprism index
-singularity exec $SIF_DIR/bmtagger_3.306.sif \
+# Step 1 — Build bitmask index (produces hg38.bitmask, ~16 GB)
+singularity exec --bind /nfs $SIF_DIR/bmtagger_3.306.sif \
+    bmtool \
+        -d /nfs/databases/hg38/hg38.fa \
+        -o $BMTAGGER_DIR/hg38.bitmask \
+        -A 0 -w 18
+
+# Step 2 — Build srprism index (prefix: hg38.srprism, ~8 GB total)
+#   Produces: hg38.srprism.amp, .idx, .map, .pmp, .rmp, .ssd
+singularity exec --bind /nfs $SIF_DIR/bmtagger_3.306.sif \
     srprism mkindex \
-           -i /nfs/databases/hg38/hg38.fa \
-           -o /nfs/databases/hg38_bmtagger/hg38.srprism \
-           -M 7168
+        -i /nfs/databases/hg38/hg38.fa \
+        -o $BMTAGGER_DIR/hg38.srprism \
+        -M 7168
 ```
 
-Pass to the pipeline:
+> The `-o $BMTAGGER_DIR/hg38.srprism` sets the **prefix** for all srprism files.
+> bmtagger's `-x` flag reads this same prefix and auto-resolves the extensions.
 
+Pass the exact file path and prefix to the pipeline:
+
+```bash
+# --host_genome_bitmask = path to the .bitmask FILE
+# --host_genome_srprism = srprism index PREFIX (no extension)
+--host_genome_bitmask /nfs/databases/hg38_bmtagger/hg38.bitmask \
+--host_genome_srprism /nfs/databases/hg38_bmtagger/hg38.srprism
 ```
---host_genome_bitmask /nfs/databases/hg38_bmtagger/
---host_genome_srprism /nfs/databases/hg38_bmtagger/
+
+**NFS bind mount**: the pipeline uses `singularity.autoMounts = true` by default.
+If your HPC's NFS mount point is not auto-detected, add:
+
+```bash
+--singularity_bind_paths '/nfs'
+# or, for multiple paths:
+--singularity_bind_paths '/nfs,/scratch'
 ```
 
 ---
@@ -259,8 +282,8 @@ nextflow run pipeline/main.nf \
     --input               my_samples.csv \
     --genomad_db          /nfs/databases/genomad_db/ \
     --reads_mode          trimmed_host_removed \
-    --host_genome_bitmask /nfs/databases/hg38_bmtagger/ \
-    --host_genome_srprism /nfs/databases/hg38_bmtagger/ \
+    --host_genome_bitmask /nfs/databases/hg38_bmtagger/hg38.bitmask \
+    --host_genome_srprism /nfs/databases/hg38_bmtagger/hg38.srprism \
     --outdir              ./results \
     --sif_dir             /containers/sif
 ```

@@ -78,10 +78,13 @@ sample_B,s3://bucket/B_R1.fastq.gz,s3://bucket/B_R2.fastq.gz,s3://bucket/B_conti
 | Parameter | Default | Description |
 |---|---|---|
 | `--input` | — | Path to samplesheet CSV |
-| `--genomad_db` | — | Path to geNomad database (NFS mount) |
+| `--genomad_db` | — | Path to geNomad DB directory (NFS mount) |
 | `--outdir` | `./results` | Output directory |
 | `--sif_dir` | `/containers/sif` | Directory containing `.sif` files |
 | `--reads_mode` | `raw` | `raw` / `host_removed` / `trimmed_host_removed` |
+| `--host_genome_bitmask` | — | Absolute path to hg38 `.bitmask` FILE (bmtagger) |
+| `--host_genome_srprism` | — | Absolute path to srprism index PREFIX, e.g. `/nfs/hg38_bmtagger/hg38.srprism` |
+| `--singularity_bind_paths` | — | Comma-separated NFS paths to bind into containers, e.g. `/nfs,/scratch` |
 | `--aligner` | `auto` | `auto` / `strobealign` / `bwamem2` / `bowtie2` |
 | `--min_contig_length` | `4000` | Minimum contig length before geNomad |
 | `--run_provirus` | `false` | Enable provirus detection |
