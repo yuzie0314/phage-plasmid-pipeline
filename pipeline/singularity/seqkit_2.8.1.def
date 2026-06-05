@@ -1,0 +1,10 @@
+Bootstrap: docker
+From: biocontainers/seqkit:v2.8.1_cv1
+
+%labels
+    maintainer pipeline
+    tool       seqkit
+    version    2.8.1
+
+%post
+    seqkit version

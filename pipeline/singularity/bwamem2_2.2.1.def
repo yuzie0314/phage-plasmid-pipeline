@@ -1,0 +1,10 @@
+Bootstrap: docker
+From: quay.io/biocontainers/bwa-mem2:2.2.1--he513fc3_0
+
+%labels
+    maintainer pipeline
+    tool       bwa-mem2
+    version    2.2.1
+
+%post
+    bwa-mem2 version

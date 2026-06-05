@@ -1,0 +1,10 @@
+Bootstrap: docker
+From: quay.io/biocontainers/coverm:0.7.0--h9ee0642_0
+
+%labels
+    maintainer pipeline
+    tool       coverm
+    version    0.7.0
+
+%post
+    coverm --version

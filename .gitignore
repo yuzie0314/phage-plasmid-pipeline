@@ -1,0 +1,22 @@
+# Claude Code local settings
+.claude/
+
+# Nextflow work directory and cache
+work/
+.nextflow/
+.nextflow.log*
+
+# Results output
+results/
+
+# Singularity image files (large binaries — build locally from .def)
+pipeline/singularity/*.sif
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db

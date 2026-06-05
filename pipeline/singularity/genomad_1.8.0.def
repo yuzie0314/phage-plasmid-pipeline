@@ -1,0 +1,10 @@
+Bootstrap: docker
+From: antoniopcamargo/genomad:1.8.0
+
+%labels
+    maintainer pipeline
+    tool       genomad
+    version    1.8.0
+
+%post
+    genomad --version

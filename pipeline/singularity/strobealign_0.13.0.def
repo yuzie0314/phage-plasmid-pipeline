@@ -1,0 +1,10 @@
+Bootstrap: docker
+From: quay.io/biocontainers/strobealign:0.13.0--h4ac6f70_0
+
+%labels
+    maintainer pipeline
+    tool       strobealign
+    version    0.13.0
+
+%post
+    strobealign --version

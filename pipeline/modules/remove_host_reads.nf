@@ -1,0 +1,37 @@
+process REMOVE_HOST_READS {
+    tag "${sample_id}"
+    label 'high'   // hg38 bitmask ~24 GB RAM
+
+    publishDir "${params.outdir}/logs", mode: 'copy', pattern: '*.log'
+
+    input:
+    tuple val(sample_id), path(r1), path(r2)
+    path bitmask_dir   // NFS path: directory containing .bitmask files
+    path srprism_dir   // NFS path: directory containing .srprism files
+
+    output:
+    tuple val(sample_id), path("${sample_id}_hostfree_R1.fastq.gz"), path("${sample_id}_hostfree_R2.fastq.gz"), emit: host_removed
+    path "${sample_id}_bmtagger.log", emit: log
+
+    script:
+    """
+    # bmtagger requires uncompressed fastq
+    zcat ${r1} > r1.fastq
+    zcat ${r2} > r2.fastq
+
+    bmtagger.sh \
+        -b ${bitmask_dir}/${bitmask_dir.name}.bitmask \
+        -x ${srprism_dir}/${srprism_dir.name}.srprism \
+        -T tmp_bmtagger \
+        -q 1 \
+        -1 r1.fastq \
+        -2 r2.fastq \
+        -o host_removed \
+        2> ${sample_id}_bmtagger.log
+
+    gzip -c host_removed_1.fastq > ${sample_id}_hostfree_R1.fastq.gz
+    gzip -c host_removed_2.fastq > ${sample_id}_hostfree_R2.fastq.gz
+
+    rm -f r1.fastq r2.fastq host_removed_1.fastq host_removed_2.fastq
+    """
+}

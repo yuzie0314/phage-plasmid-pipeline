@@ -1,0 +1,10 @@
+Bootstrap: docker
+From: biocontainers/fastp:v0.23.4_cv1
+
+%labels
+    maintainer pipeline
+    tool       fastp
+    version    0.23.4
+
+%post
+    fastp --version

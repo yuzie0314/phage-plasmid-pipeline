@@ -1,0 +1,27 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    maintainer pipeline
+    tool       bmtagger
+    version    3.306
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -qq && apt-get install -y --no-install-recommends \
+        wget \
+        ca-certificates \
+        ncbi-blast+ \
+        && rm -rf /var/lib/apt/lists/*
+
+    # BMTagger binaries from NCBI FTP
+    for bin in bmtagger.sh bmfilter srprism; do
+        wget -q "https://ftp.ncbi.nlm.nih.gov/pub/agarwala/bmtagger/${bin}" \
+             -O /usr/local/bin/${bin}
+        chmod +x /usr/local/bin/${bin}
+    done
+
+%test
+    bmtagger.sh 2>&1 | head -2
+    bmfilter    2>&1 | head -2
+    srprism     2>&1 | head -2

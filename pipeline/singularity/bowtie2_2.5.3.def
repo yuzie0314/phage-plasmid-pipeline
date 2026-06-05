@@ -1,0 +1,10 @@
+Bootstrap: docker
+From: quay.io/biocontainers/bowtie2:2.5.3--py39h6fed5c7_0
+
+%labels
+    maintainer pipeline
+    tool       bowtie2
+    version    2.5.3
+
+%post
+    bowtie2 --version | head -1
