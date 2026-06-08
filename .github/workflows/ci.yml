@@ -46,8 +46,16 @@ jobs:
       - name: Install nf-test
         run: |
           wget -qO- https://get.nf-test.com | bash
-          echo "${HOME}/.nf-test/bin" >> "${GITHUB_PATH}"
-          ${HOME}/.nf-test/bin/nf-test --version
+          NF_TEST_BIN=$(find "${HOME}" -maxdepth 5 -name "nf-test" -type f 2>/dev/null | head -1)
+          if [ -z "${NF_TEST_BIN}" ]; then
+            echo "ERROR: nf-test binary not found after installation"
+            exit 1
+          fi
+          echo "Installed at: ${NF_TEST_BIN}"
+          echo "$(dirname ${NF_TEST_BIN})" >> "${GITHUB_PATH}"
+
+      - name: Verify nf-test
+        run: nf-test --version
 
       - name: Generate synthetic test data
         run: python3 tests/generate_test_data.py
