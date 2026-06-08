@@ -2,7 +2,6 @@ nextflow_workflow {
     name "Test MGE_IDENTIFICATION"
     script "pipeline/subworkflows/mge_identification.nf"
     workflow "MGE_IDENTIFICATION"
-    config "pipeline/conf/test.config"
 
     test("stub: emits mge_index, mge_fna, phage_fna, plasmid_fna") {
         options "-stub"

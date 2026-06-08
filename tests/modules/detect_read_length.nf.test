@@ -2,7 +2,6 @@ nextflow_process {
     name "Test DETECT_READ_LENGTH"
     script "pipeline/modules/detect_read_length.nf"
     process "DETECT_READ_LENGTH"
-    config "pipeline/conf/test.config"
 
     test("stub: emits avg_len env var and log file") {
         options "-stub"

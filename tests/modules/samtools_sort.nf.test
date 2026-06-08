@@ -2,7 +2,6 @@ nextflow_process {
     name "Test SAMTOOLS_SORT"
     script "pipeline/modules/samtools_sort.nf"
     process "SAMTOOLS_SORT"
-    config "pipeline/conf/test.config"
 
     test("stub: outputs sorted bam and bai") {
         options "-stub"

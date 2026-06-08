@@ -2,7 +2,6 @@ nextflow_process {
     name "Test MERGE_MGE"
     script "pipeline/modules/merge_mge.nf"
     process "MERGE_MGE"
-    config "pipeline/conf/test.config"
 
     test("stub: merged output has correct name") {
         options "-stub"

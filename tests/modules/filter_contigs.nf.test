@@ -2,7 +2,6 @@ nextflow_process {
     name "Test FILTER_CONTIGS"
     script "pipeline/modules/filter_contigs.nf"
     process "FILTER_CONTIGS"
-    config "pipeline/conf/test.config"
 
     test("stub: correct output filenames for sample_id") {
         options "-stub"

@@ -2,7 +2,6 @@ nextflow_process {
     name "Test BUILD_INDEX"
     script "pipeline/modules/build_index.nf"
     process "BUILD_INDEX"
-    config "pipeline/conf/test.config"
 
     test("stub: strobealign aligner produces index fna") {
         options "-stub"

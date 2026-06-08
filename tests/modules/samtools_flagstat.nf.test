@@ -2,7 +2,6 @@ nextflow_process {
     name "Test SAMTOOLS_FLAGSTAT"
     script "pipeline/modules/samtools_flagstat.nf"
     process "SAMTOOLS_FLAGSTAT"
-    config "pipeline/conf/test.config"
 
     test("stub: flagstat txt output correct name") {
         options "-stub"
