@@ -19,7 +19,7 @@ process DETECT_READ_LENGTH {
 
     stub:
     """
-    avg_len=150
-    echo "${sample_id}\t\${avg_len}" > ${sample_id}_read_length.log
+    export avg_len=150
+    touch ${sample_id}_read_length.log
     """
 }

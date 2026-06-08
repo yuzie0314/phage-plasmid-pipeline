@@ -12,7 +12,7 @@ nextflow_process {
             }
             process {
                 """
-                input[0] = ['sample_test', file('fake_sorted.bam'), file('fake_sorted.bam.bai')]
+                input[0] = ['sample_test', file('${projectDir}/tests/data/fasta/test_contigs.fna'), file('${projectDir}/tests/data/fasta/test_contigs.fna')]
                 """
             }
         }
