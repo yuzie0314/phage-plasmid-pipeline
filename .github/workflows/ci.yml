@@ -55,7 +55,7 @@ jobs:
           echo "$(dirname ${NF_TEST_BIN})" >> "${GITHUB_PATH}"
 
       - name: Verify nf-test
-        run: nf-test --version
+        run: nf-test version
 
       - name: Generate synthetic test data
         run: python3 tests/generate_test_data.py
