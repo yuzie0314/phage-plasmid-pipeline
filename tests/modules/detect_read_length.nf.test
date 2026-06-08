@@ -28,7 +28,7 @@ nextflow_process {
             // stub emits avg_len as a string env var
             assert process.out.read_length[0][1] != null
             assert process.out.log.size() == 1
-            assert path(process.out.log[0]).name == 'sample_test_read_length.log'
+            assert new File(process.out.log[0].toString()).name == 'sample_test_read_length.log'
         }
     }
 }

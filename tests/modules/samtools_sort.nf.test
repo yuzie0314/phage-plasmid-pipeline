@@ -21,8 +21,8 @@ nextflow_process {
             assert process.success
             assert process.out.sorted_bam.size() == 1
             assert process.out.sorted_bam[0][0] == 'sample_test'
-            assert path(process.out.sorted_bam[0][1].toString()).name == 'sample_test_sorted.bam'
-            assert path(process.out.sorted_bam[0][2].toString()).name == 'sample_test_sorted.bam.bai'
+            assert new File(process.out.sorted_bam[0][1].toString()).name == 'sample_test_sorted.bam'
+            assert new File(process.out.sorted_bam[0][2].toString()).name == 'sample_test_sorted.bam.bai'
             assert process.out.log.size() == 1
         }
     }

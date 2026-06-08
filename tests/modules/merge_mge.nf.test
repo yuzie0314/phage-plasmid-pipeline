@@ -25,9 +25,9 @@ nextflow_process {
             assert process.success
             assert process.out.merged.size() == 1
             assert process.out.merged[0][0] == 'sample_test'
-            assert path(process.out.merged[0][1]).name == 'sample_test_mge_merged.fna'
+            assert new File(process.out.merged[0][1].toString()).name == 'sample_test_mge_merged.fna'
             assert process.out.log.size() == 1
-            assert path(process.out.log[0]).name == 'sample_test_merge_mge.log'
+            assert new File(process.out.log[0].toString()).name == 'sample_test_merge_mge.log'
         }
     }
 }

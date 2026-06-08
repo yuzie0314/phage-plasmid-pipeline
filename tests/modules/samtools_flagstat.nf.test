@@ -21,7 +21,7 @@ nextflow_process {
             assert process.success
             assert process.out.txt.size() == 1
             assert process.out.txt[0][0] == 'sample_test'
-            assert path(process.out.txt[0][1]).name == 'sample_test_flagstat.txt'
+            assert new File(process.out.txt[0][1].toString()).name == 'sample_test_flagstat.txt'
         }
     }
 }

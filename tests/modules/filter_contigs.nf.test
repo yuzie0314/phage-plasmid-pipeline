@@ -25,9 +25,9 @@ nextflow_process {
             assert process.success
             assert process.out.filtered.size() == 1
             assert process.out.filtered[0][0] == 'sample_test'
-            assert path(process.out.filtered[0][1]).name == 'sample_test_filtered.fna'
+            assert new File(process.out.filtered[0][1].toString()).name == 'sample_test_filtered.fna'
             assert process.out.log.size() == 1
-            assert path(process.out.log[0]).name == 'sample_test_filter_contigs.log'
+            assert new File(process.out.log[0].toString()).name == 'sample_test_filter_contigs.log'
         }
     }
 
