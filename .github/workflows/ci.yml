@@ -24,6 +24,9 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install pytest
+        run: pip install pytest
+
       - name: Run pytest
         run: pytest tests/validate_samplesheet/ -v --tb=short
 
@@ -43,7 +46,8 @@ jobs:
       - name: Install nf-test
         run: |
           wget -qO- https://get.nf-test.com | bash
-          echo "$HOME/.nf-test/bin" >> $GITHUB_PATH
+          echo "${HOME}/.nf-test/bin" >> "${GITHUB_PATH}"
+          ${HOME}/.nf-test/bin/nf-test --version
 
       - name: Generate synthetic test data
         run: python3 tests/generate_test_data.py
