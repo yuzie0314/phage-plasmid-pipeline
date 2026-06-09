@@ -89,6 +89,15 @@ def main() -> None:
     )
     print(f"  Created {ss_path}")
 
+    # Stub files for tests that need inputs with distinct filenames
+    stub_fasta = DATA_DIR / "fasta" / "test_contigs_plasmid.fna"
+    stub_fasta.write_text(">stub_plasmid length=100\nACGT\n")
+    bam_dir = DATA_DIR / "bam"
+    bam_dir.mkdir(parents=True, exist_ok=True)
+    (bam_dir / "fake_sorted.bam").write_bytes(b"")
+    (bam_dir / "fake_sorted.bam.bai").write_bytes(b"")
+    print(f"  Created stub files: {stub_fasta.name}, fake_sorted.bam, fake_sorted.bam.bai")
+
     print("\nDone. Run pytest and nf-test as normal.")
 
 

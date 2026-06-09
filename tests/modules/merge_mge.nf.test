@@ -15,7 +15,7 @@ nextflow_process {
                 input[0] = [
                     'sample_test',
                     file('${projectDir}/tests/data/fasta/test_contigs.fna'),
-                    file('${projectDir}/tests/data/fasta/test_contigs.fna')
+                    file('${projectDir}/tests/data/fasta/test_contigs_plasmid.fna')
                 ]
                 """
             }

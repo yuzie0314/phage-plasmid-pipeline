@@ -20,6 +20,8 @@ __pycache__/
 # Generated test data (created by tests/generate_test_data.py)
 tests/data/fasta/*.fna
 tests/data/fastq/*.fastq.gz
+tests/data/bam/*.bam
+tests/data/bam/*.bai
 tests/data/samplesheets/valid.csv
 
 # nf-test work and cache directories
