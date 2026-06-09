@@ -42,9 +42,16 @@ pipeline/singularity/
 └── coverm_0.7.0.def        → coverm_0.7.0.sif
 ```
 
-> **Note:** Most `.def` files pull a pre-built Docker image from a public registry
-> (Biocontainers / quay.io). Singularity converts the Docker layer cache to a
-> read-only `.sif`. You only need internet access during the first build.
+> **Note:** `.def` files use two base strategies:
+> - **Biocontainers (quay.io)** — bwamem2, genomad, bowtie2, samtools, bmtagger: pulls a
+>   pre-built Docker layer; fast build.
+> - **micromamba (bioconda)** — fastp, seqkit, coverm, strobealign: installs from
+>   Bioconda inside `mambaorg/micromamba:1.5.8`; builds take a few minutes longer but
+>   are immune to Biocontainers tag churn.
+>
+> All builds require internet access. The micromamba images are ~300–500 MB each
+> (vs. ~100–200 MB for the quay.io ones); build time is 5–10 min per image on a
+> `c6i.2xlarge`.
 
 ---
 
@@ -143,26 +150,29 @@ singularity build --remote $SIF_DIR/genomad_1.8.0.sif $DEF_DIR/genomad_1.8.0.def
 
 ---
 
-### 2.5 Pull pre-built images directly (alternative)
+### 2.5 Pull pre-built images directly (partial alternative)
 
-If you prefer to skip the `.def` build step, pull directly from Biocontainers and rename:
+Four images (bwamem2, genomad, bowtie2, samtools) have stable, verified Biocontainers
+tags and can be pulled directly. The other five use `.def` builds (either micromamba
+or have no public image) and **must** be built via Section 2.1 / 2.2.
 
 ```bash
 SIF_DIR=/containers/sif
 mkdir -p $SIF_DIR
 
-singularity pull $SIF_DIR/seqkit_2.8.1.sif       docker://biocontainers/seqkit:v2.8.1_cv1
-singularity pull $SIF_DIR/genomad_1.8.0.sif       docker://antoniopcamargo/genomad:1.8.0
-singularity pull $SIF_DIR/fastp_0.23.4.sif        docker://biocontainers/fastp:v0.23.4_cv1
-singularity pull $SIF_DIR/strobealign_0.13.0.sif  docker://quay.io/biocontainers/strobealign:0.13.0--h4ac6f70_0
-singularity pull $SIF_DIR/bwamem2_2.2.1.sif       docker://quay.io/biocontainers/bwa-mem2:2.2.1--he513fc3_0
-singularity pull $SIF_DIR/bowtie2_2.5.3.sif       docker://quay.io/biocontainers/bowtie2:2.5.3--py39h6fed5c7_0
-singularity pull $SIF_DIR/samtools_1.19.2.sif     docker://quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1
-singularity pull $SIF_DIR/coverm_0.7.0.sif        docker://quay.io/biocontainers/coverm:0.7.0--h9ee0642_0
-```
+# These four can be pulled directly:
+singularity pull $SIF_DIR/bwamem2_2.2.1.sif   docker://quay.io/biocontainers/bwa-mem2:2.2.1--he513fc3_0
+singularity pull $SIF_DIR/genomad_1.8.0.sif   docker://antoniopcamargo/genomad:1.8.0
+singularity pull $SIF_DIR/bowtie2_2.5.3.sif   docker://quay.io/biocontainers/bowtie2:2.5.3--py39h6fed5c7_0
+singularity pull $SIF_DIR/samtools_1.19.2.sif docker://quay.io/biocontainers/samtools:1.19.2--h50ea8bc_1
 
-> `bmtagger_3.306.sif` has no public Biocontainers image — build it from
-> `bmtagger_3.306.def` (Section 2.1 / 2.4).
+# These five must be built from their .def files (see Section 2.1 / 2.2):
+#   fastp_0.23.4.sif      — micromamba/bioconda build
+#   seqkit_2.8.1.sif      — micromamba/bioconda build
+#   coverm_0.7.0.sif      — micromamba/bioconda build
+#   strobealign_0.13.0.sif — micromamba/bioconda build
+#   bmtagger_3.306.sif    — no public Biocontainers image
+```
 
 ---
 
@@ -429,6 +439,9 @@ ch_multiqc_input = ch_fastp_reports
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `singularity build` exits with permission error | No sudo / fakeroot | Use `--fakeroot` or `--remote` (Section 2.3 / 2.4) |
+| `manifest unknown` during build | Stale / wrong Biocontainers tag | Build from the updated `.def` file (Section 2.1); these now use micromamba/bioconda for fastp, seqkit, coverm, strobealign |
+| `mount .../resolv.conf → /etc/resolv.conf error: destination doesn't exist` | Some minimal Docker base images omit `/etc/resolv.conf`; Singularity tries to bind-mount it during `%post` | Fixed in `bwamem2_2.2.1.def` via `%setup touch "${SINGULARITY_ROOTFS}/etc/resolv.conf"` |
+| `requested access to the resource is denied` during pull | `docker.io/biocontainers` is a legacy registry requiring auth for new pulls | Use the `.def` build instead (Section 2.1); affected images: seqkit, fastp |
 | `REMOVE_HOST_READS` OOM | bitmask index needs ~24 GB | Increase `high` label memory in `conf/base.config` |
 | `GENOMAD` fails on empty filtered contigs | All contigs < `min_contig_length` | Lower `--min_contig_length` or check your assembly |
 | `COVERM_*` hangs | Collecting too many large BAMs | Check disk space; consider per-sample CoverM if >200 samples |

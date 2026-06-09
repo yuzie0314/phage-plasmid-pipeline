@@ -1,6 +1,11 @@
 Bootstrap: docker
 From: quay.io/biocontainers/bwa-mem2:2.2.1--he513fc3_0
 
+%setup
+    # Singularity bind-mounts /etc/resolv.conf from the host during %post;
+    # some minimal Docker images omit this file, causing the mount to fail.
+    touch "${SINGULARITY_ROOTFS}/etc/resolv.conf"
+
 %labels
     maintainer pipeline
     tool       bwa-mem2

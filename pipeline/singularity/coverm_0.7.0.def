@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: quay.io/biocontainers/coverm:0.7.0--h9ee0642_0
+From: mambaorg/micromamba:1.5.8
 
 %labels
     maintainer pipeline
@@ -7,4 +7,12 @@ From: quay.io/biocontainers/coverm:0.7.0--h9ee0642_0
     version    0.7.0
 
 %post
-    coverm --version
+    /usr/local/bin/micromamba install -y -n base \
+        -c conda-forge -c bioconda \
+        coverm=0.7.0
+    /usr/local/bin/micromamba clean -y --all
+    /opt/conda/bin/coverm --version
+
+%environment
+    export PATH="/opt/conda/bin:$PATH"
+    export MAMBA_ROOT_PREFIX="/opt/conda"

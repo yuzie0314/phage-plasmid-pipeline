@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: biocontainers/seqkit:v2.8.1_cv1
+From: mambaorg/micromamba:1.5.8
 
 %labels
     maintainer pipeline
@@ -7,4 +7,12 @@ From: biocontainers/seqkit:v2.8.1_cv1
     version    2.8.1
 
 %post
-    seqkit version
+    /usr/local/bin/micromamba install -y -n base \
+        -c conda-forge -c bioconda \
+        seqkit=2.8.1
+    /usr/local/bin/micromamba clean -y --all
+    /opt/conda/bin/seqkit version
+
+%environment
+    export PATH="/opt/conda/bin:$PATH"
+    export MAMBA_ROOT_PREFIX="/opt/conda"
