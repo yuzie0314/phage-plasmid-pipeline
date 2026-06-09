@@ -187,6 +187,72 @@ params {
 
 ---
 
+### 2.7 Recommended EC2 instances for build and database setup (AWS)
+
+If you are building Singularity images and/or preparing databases on AWS, use the
+tables below to choose the right instance. The main constraints are:
+
+| Task | CPU | RAM | Disk |
+|---|---|---|---|
+| Singularity build (9 images) | moderate | 16 GB | ~50 GB build cache + ~25 GB SIF output |
+| geNomad DB download | low | low | ~15 GB |
+| hg38 download | low | low | ~10 GB uncompressed |
+| bmtagger bitmask (`bmtool`) | moderate | **~24 GB peak** | ~16 GB output |
+| bmtagger srprism (`srprism mkindex -M 7168`) | moderate | ~8 GB | ~8 GB output |
+
+---
+
+#### Building Singularity images
+
+Singularity builds are CPU and disk I/O bound; memory requirements are modest.
+
+| Instance | vCPU | RAM | ~Cost/hr | Rationale |
+|---|---|---|---|---|
+| `m6i.xlarge` | 4 | 16 GB | $0.19 | Budget option for sequential builds |
+| `c6i.2xlarge` | 8 | 16 GB | $0.34 | **Recommended** — compute-optimised; cut build time roughly in half vs. `xlarge` when building all 9 images |
+
+EBS: attach a **50 GB gp3** volume minimum (build squashfs cache + final SIF files).
+
+---
+
+#### Preparing databases
+
+The bmtagger bitmask build (`bmtool`) is the memory bottleneck — it loads the entire
+hg38 reference into RAM and peaks at ~24 GB. All other steps need ≤ 8 GB.
+
+| Instance | vCPU | RAM | ~Cost/hr | Rationale |
+|---|---|---|---|---|
+| `r6i.xlarge` | 4 | 32 GB | $0.25 | Minimum for `bmtool`; 32 GB gives ~8 GB headroom over the peak |
+| `r6i.2xlarge` | 8 | 64 GB | $0.50 | **Recommended** — comfortable margin; run geNomad download and bmtagger index in parallel |
+
+EBS: attach a **200 GB gp3** volume to accommodate hg38 (~10 GB), bitmask (~16 GB),
+srprism index (~8 GB), geNomad DB (~15 GB), and working space.
+
+---
+
+#### One-stop setup (Singularity build + databases on a single instance)
+
+If you want to complete everything in one session, use a memory-optimised instance
+with enough CPU to keep build times reasonable:
+
+| Instance | vCPU | RAM | ~Cost/hr | Notes |
+|---|---|---|---|---|
+| `r6i.2xlarge` | 8 | 64 GB | $0.50 | Build all SIF images first, then prepare databases — total wall time ~3–4 h |
+| `r6i.4xlarge` | 16 | 128 GB | $1.01 | Faster parallel builds; worth it if your time is the bottleneck |
+
+EBS: attach a **250 GB gp3** volume (SIF files + all databases + temp space).
+
+> **Tip — use FSx directly**: if you plan to run the pipeline with FSx for Lustre,
+> mount the FSx filesystem on the build instance and write SIF files and databases
+> directly to `/fsx`. This avoids a separate copy step and makes the files immediately
+> available to pipeline workers.
+
+> **Tip — Spot instances**: Singularity builds and database downloads are interruptible
+> (re-runnable). Use Spot instances to reduce costs by up to 70 %. Enable
+> `--hibernation` or use a persistent EBS volume so progress is not lost on interruption.
+
+---
+
 ## 3. Prepare Databases
 
 ### geNomad database
