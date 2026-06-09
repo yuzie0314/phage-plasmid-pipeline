@@ -149,6 +149,53 @@ nextflow run pipeline/main.nf \
     --genomad_db /nfs/databases/genomad_db/
 ```
 
+### 4. AWS FSx for Lustre integration test
+
+When running on AWS with FSx for Lustre as the shared filesystem, choose an EC2 instance
+based on the `reads_mode` being tested:
+
+#### Without host removal (`reads_mode = 'raw'`)
+
+| Instance | vCPU | RAM | ~Cost/hr | Rationale |
+|---|---|---|---|---|
+| `m6i.2xlarge` | 8 | 32 GB | $0.38 | Sufficient for geNomad (medium label: 16 CPU / 32 GB) + aligners + CoverM |
+| `m6i.4xlarge` | 16 | 64 GB | $0.77 | Preferred when running multiple samples concurrently |
+
+#### With host removal (`reads_mode = 'host_removed'` or `trimmed_host_removed`)
+
+The bmtagger bitmask index (~16 GB) must fit in memory alongside the running process,
+requiring at least 24 GB RAM headroom dedicated to the `REMOVE_HOST_READS` step.
+
+| Instance | vCPU | RAM | ~Cost/hr | Rationale |
+|---|---|---|---|---|
+| `r6i.2xlarge` | 8 | 64 GB | $0.50 | **Recommended first choice** — memory-optimised, 64 GB covers bmtagger bitmask + OS overhead; 12.5 Gbps network suits large FSx reads |
+| `r6i.4xlarge` | 16 | 128 GB | $1.01 | Use when running ≥ 3 samples in parallel or when adding a safety margin for concurrent geNomad runs |
+
+> **Why r6i over r5?** The r6i series uses Intel Ice Lake, delivering ~15 % better
+> single-core performance and higher memory bandwidth — important when the bmtagger
+> bitmask is streamed from FSx on every process invocation.
+
+#### FSx-specific configuration
+
+```bash
+# Mount point is typically /fsx on the instance
+# Bind it into every Singularity container so database files are visible
+nextflow run pipeline/main.nf \
+    -profile singularity,awsbatch \
+    --input            s3://your-bucket/samples.csv \
+    --genomad_db       /fsx/databases/genomad_db/ \
+    --host_genome_bitmask /fsx/databases/hg38_bmtagger/hg38.bitmask \
+    --host_genome_srprism /fsx/databases/hg38_bmtagger/hg38.srprism \
+    --sif_dir          /fsx/containers/sif \
+    --outdir           s3://your-bucket/results \
+    --singularity_bind_paths '/fsx'
+```
+
+> **Recommended test strategy**: start with `r6i.2xlarge` + `reads_mode = 'raw'` to
+> validate FSx mounting, Singularity, and channel logic end-to-end without needing the
+> bmtagger database. Once that passes, rerun with `reads_mode = 'host_removed'` and
+> the full hg38 index to validate the high-memory path.
+
 ---
 
 ## MultiQC Integration
