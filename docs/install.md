@@ -194,11 +194,11 @@ tables below to choose the right instance. The main constraints are:
 
 | Task | CPU | RAM | Disk |
 |---|---|---|---|
-| Singularity build (9 images) | moderate | 16 GB | ~50 GB build cache + ~25 GB SIF output |
-| geNomad DB download | low | low | ~15 GB |
-| hg38 download | low | low | ~10 GB uncompressed |
-| bmtagger bitmask (`bmtool`) | moderate | **~24 GB peak** | ~16 GB output |
-| bmtagger srprism (`srprism mkindex -M 7168`) | moderate | ~8 GB | ~8 GB output |
+| Singularity build (9 images) | moderate | 16 GB | ~50 GB build cache + ~20 GB SIF output |
+| geNomad DB download | low | low | **~15 GB** |
+| hg38 reference download | low | low | **~3.2 GB** uncompressed FASTA |
+| bmtagger bitmask (`bmtool`) | moderate | **~24 GB peak** | **~16 GB** output |
+| bmtagger srprism (`srprism mkindex -M 7168`) | moderate | ~8 GB | **~8 GB** output (6 files) |
 
 ---
 
@@ -225,8 +225,8 @@ hg38 reference into RAM and peaks at ~24 GB. All other steps need ≤ 8 GB.
 | `r6i.xlarge` | 4 | 32 GB | $0.25 | Minimum for `bmtool`; 32 GB gives ~8 GB headroom over the peak |
 | `r6i.2xlarge` | 8 | 64 GB | $0.50 | **Recommended** — comfortable margin; run geNomad download and bmtagger index in parallel |
 
-EBS: attach a **200 GB gp3** volume to accommodate hg38 (~10 GB), bitmask (~16 GB),
-srprism index (~8 GB), geNomad DB (~15 GB), and working space.
+EBS: attach a **100 GB gp3** volume to accommodate hg38 (~3.2 GB), bitmask (~16 GB),
+srprism index (~8 GB), geNomad DB (~15 GB), and working space (~57.8 GB total used).
 
 ---
 
@@ -240,7 +240,7 @@ with enough CPU to keep build times reasonable:
 | `r6i.2xlarge` | 8 | 64 GB | $0.50 | Build all SIF images first, then prepare databases — total wall time ~3–4 h |
 | `r6i.4xlarge` | 16 | 128 GB | $1.01 | Faster parallel builds; worth it if your time is the bottleneck |
 
-EBS: attach a **250 GB gp3** volume (SIF files + all databases + temp space).
+EBS: attach a **150 GB gp3** volume (SIF files ~20 GB + all databases ~42 GB + temp space).
 
 > **Tip — use FSx directly**: if you plan to run the pipeline with FSx for Lustre,
 > mount the FSx filesystem on the build instance and write SIF files and databases
@@ -255,7 +255,19 @@ EBS: attach a **250 GB gp3** volume (SIF files + all databases + temp space).
 
 ## 3. Prepare Databases
 
-### geNomad database
+### Database size summary
+
+| Database / file | Size | Required when |
+|---|---|---|
+| geNomad DB | ~15 GB | always |
+| hg38.fa (reference genome) | ~3.2 GB | `reads_mode != 'raw'` |
+| hg38.bitmask | ~16 GB | `reads_mode != 'raw'` |
+| hg38.srprism.* (6 files) | ~8 GB | `reads_mode != 'raw'` |
+| **Total (all databases)** | **~42 GB** | |
+
+---
+
+### geNomad database (~15 GB)
 
 ```bash
 singularity exec $SIF_DIR/genomad_1.8.0.sif \
@@ -270,21 +282,27 @@ The pipeline needs two separate index types built from the same hg38 reference.
 Both are accessed as NFS paths inside Singularity — they are **never copied** into
 the Nextflow work directory.
 
+| File | Size | Note |
+|---|---|---|
+| hg38.fa | ~3.2 GB | input reference |
+| hg38.bitmask | ~16 GB | output of `bmtool` |
+| hg38.srprism.* | ~8 GB | output of `srprism mkindex` (6 files) |
+
 ```bash
 # Assumes hg38.fa is already available at /nfs/databases/hg38/hg38.fa
-# You need ~40 GB free disk space and ~24 GB RAM for the bitmask step.
+# Disk required: ~27 GB  RAM required: ~24 GB (bmtool bitmask step)
 
 BMTAGGER_DIR=/nfs/databases/hg38_bmtagger
 mkdir -p $BMTAGGER_DIR
 
-# Step 1 — Build bitmask index (produces hg38.bitmask, ~16 GB)
+# Step 1 — Build bitmask index (output: hg38.bitmask, ~16 GB)
 singularity exec --bind /nfs $SIF_DIR/bmtagger_3.306.sif \
     bmtool \
         -d /nfs/databases/hg38/hg38.fa \
         -o $BMTAGGER_DIR/hg38.bitmask \
         -A 0 -w 18
 
-# Step 2 — Build srprism index (prefix: hg38.srprism, ~8 GB total)
+# Step 2 — Build srprism index (output prefix: hg38.srprism, ~8 GB across 6 files)
 #   Produces: hg38.srprism.amp, .idx, .map, .pmp, .rmp, .ssd
 singularity exec --bind /nfs $SIF_DIR/bmtagger_3.306.sif \
     srprism mkindex \
