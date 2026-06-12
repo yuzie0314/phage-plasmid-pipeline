@@ -93,29 +93,19 @@ singularity build --fakeroot $SIF_DIR/seqkit_2.8.1.sif $DEF_DIR/seqkit_2.8.1.def
 
 ### 2.2 Build all images at once (recommended)
 
-```bash
-SIF_DIR=/containers/sif
-mkdir -p $SIF_DIR
-DEF_DIR=pipeline/singularity
-
-for def in $DEF_DIR/*.def; do
-    sif_name=$(basename "$def" .def).sif
-    echo "==> Building $sif_name"
-    sudo singularity build "$SIF_DIR/$sif_name" "$def"
-done
-
-echo "All images built in $SIF_DIR"
-ls -lh $SIF_DIR
-```
-
-With fakeroot (no sudo):
+Use the helper script at `scripts/build_sif.sh`:
 
 ```bash
-for def in $DEF_DIR/*.def; do
-    sif_name=$(basename "$def" .def).sif
-    singularity build --fakeroot "$SIF_DIR/$sif_name" "$def"
-done
+# With sudo (default):
+bash scripts/build_sif.sh
+
+# With fakeroot (HPC without root):
+bash scripts/build_sif.sh --fakeroot
 ```
+
+The script builds every `.def` in `pipeline/singularity/` and writes the `.sif` files to
+`/fsx/singularity/phage-plasmid-pipeline/` (edit `SIF_DIR` at the top of the script to
+change the destination).
 
 ---
 
