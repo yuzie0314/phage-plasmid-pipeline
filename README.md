@@ -208,6 +208,8 @@ nextflow run pipeline/main.nf \
 Tested on **EC2 r6i.xlarge** (4 vCPU / 32 GB RAM), 3 samples (`B14AML_FTSG002A/B/C`), on-demand pricing ~$0.252/hr (us-east-1).
 Resources capped to 4 CPU / 24 GB via `test_local.config` for local testing; production should use `r6i.2xlarge` or larger with the default `base.config`.
 
+**Input size per sample:** reads ~4.5 GB compressed FASTQ (paired-end), contigs ~149 MB FASTA (pre-assembled by MEGAHIT).
+
 ### Per-module timing
 
 Measured from `pipeline_info/trace.tsv` (raw mode) and `storeDir` file timestamps (GENOMAD).
@@ -227,8 +229,8 @@ Measured from `pipeline_info/trace.tsv` (raw mode) and `storeDir` file timestamp
 | SAMTOOLS_FLAGSTAT | 10–22 s × 3 | pending | pending | |
 | COVERM_PHAGE | 1m 6s | pending | pending | all BAMs collected before CoverM |
 | COVERM_PLASMID | 1m 15s | pending | pending | |
-| **Total wall time** | **~35 min** (excl. GENOMAD)<br>**~1h 47 min** (first run, incl. GENOMAD) | **~7h 20 min** (est.) | pending | |
-| **Estimated cost** | **~$0.15** (excl. GENOMAD)<br>**~$0.45** (first run) | **~$1.85** (est.) | pending | r6i.xlarge @ $0.252/hr |
+| **Total wall time** | **~1h 47 min** | **~7h 20 min** (est.) | pending | |
+| **Estimated cost** | **~$0.45** | **~$1.85** (est.) | pending | r6i.xlarge @ $0.252/hr |
 
 > GENOMAD runs once and caches to `results/.genomad_storeDir/`; all subsequent runs (any `reads_mode`) skip it automatically.
 > bmtagger outputs are cached per `reads_mode` in `results/.bmtagger_storeDir/` — re-runs within the same mode skip host removal.
