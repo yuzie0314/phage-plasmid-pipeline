@@ -36,9 +36,9 @@ nf-test.log
 # Local test samplesheet (contains hardcoded FSx paths)
 samplesheet_test_raw.csv
 
-# Analysis outputs at root (stale, moved to analysis/test_results/)
-compare_modes_*.png
-compare_modes_*.tsv
+# Analysis outputs at repo root (stale duplicates; canonical copies are in analysis/test_results/)
+/compare_modes_*.png
+/compare_modes_*.tsv
 
 # OS
 .DS_Store
