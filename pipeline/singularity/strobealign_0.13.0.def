@@ -7,11 +7,14 @@ From: mambaorg/micromamba:1.5.8
     version    0.13.0
 
 %post
-    /usr/local/bin/micromamba install -y -n base \
+    export MAMBA_ROOT_PREFIX=/opt/conda
+    /usr/bin/micromamba install -y -n base \
         -c conda-forge -c bioconda \
-        strobealign=0.13.0
-    /usr/local/bin/micromamba clean -y --all
+        strobealign=0.13.0 \
+        samtools=1.21
+    /usr/bin/micromamba clean -y --all
     /opt/conda/bin/strobealign --version
+    /opt/conda/bin/samtools --version
 
 %environment
     export PATH="/opt/conda/bin:$PATH"

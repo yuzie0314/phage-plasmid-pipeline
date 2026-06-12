@@ -61,7 +61,9 @@ workflow {
     MGE_ABUNDANCE(
         ch_raw_reads,
         MGE_IDENTIFICATION.out.mge_index,
-        MGE_IDENTIFICATION.out.mge_fna
+        MGE_IDENTIFICATION.out.mge_fna,
+        MGE_IDENTIFICATION.out.phage_fna,
+        MGE_IDENTIFICATION.out.plasmid_fna
     )
 
     // ── MultiQC emit (consumed by de novo pipeline) ───────────────────────────

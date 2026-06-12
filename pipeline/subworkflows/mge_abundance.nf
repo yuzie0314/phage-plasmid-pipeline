@@ -12,9 +12,11 @@ include { COVERM_PLASMID    } from '../modules/coverm_plasmid'
 workflow MGE_ABUNDANCE {
 
     take:
-    ch_raw_reads   // tuple val(sample_id), path(r1), path(r2)
-    ch_mge_index   // tuple val(sample_id), path(index*), val(aligner)   from MGE_IDENTIFICATION
-    ch_mge_fna     // tuple val(sample_id), path(mge_merged.fna)
+    ch_raw_reads    // tuple val(sample_id), path(r1), path(r2)
+    ch_mge_index    // tuple val(sample_id), path(index*), val(aligner)   from MGE_IDENTIFICATION
+    ch_mge_fna      // tuple val(sample_id), path(mge_merged.fna)
+    ch_phage_fna    // tuple val(sample_id), path(virus_sequences.fna)
+    ch_plasmid_fna  // tuple val(sample_id), path(plasmid_sequences.fna)
 
     main:
 
@@ -43,6 +45,13 @@ workflow MGE_ABUNDANCE {
         ch_fastp_reports     = Channel.empty()
     }
 
+    // ── SHARED REFERENCE ─────────────────────────────────────────────────────
+    // Concatenate all per-sample merged FNAs into one combined reference so all
+    // BAMs share the same reference set (required by coverm contig non-streaming mode)
+    ch_combined_fna = ch_mge_fna
+        .map { sample_id, fna -> fna }
+        .collectFile(name: 'mge_combined.fna')
+
     // ── ALIGNER ROUTING ──────────────────────────────────────────────────────
     // Join reads with their per-sample index
     ch_reads_with_index = ch_reads_for_mapping
@@ -66,8 +75,9 @@ workflow MGE_ABUNDANCE {
         // Emit aligner_selection.log per sample
         ch_aligner_selection_log = DETECT_READ_LENGTH.out.log
 
-        // Map each branch to (sample_id, r1, r2, index_files)
-        ch_strobealign_input = ch_branched.strobealign.map { it[0,2,3,4] }
+        // strobealign indexes on-the-fly: use the combined reference so all BAMs
+        // share the same reference set for CoverM
+        ch_strobealign_input = ch_branched.strobealign.map { it[0,2,3] }.combine(ch_combined_fna)
         ch_bwamem2_input     = ch_branched.bwamem2    .map { it[0,2,3,4] }
         ch_bowtie2_input     = ch_branched.bowtie2    .map { it[0,2,3,4] }
 
@@ -82,16 +92,16 @@ workflow MGE_ABUNDANCE {
     } else {
         ch_aligner_selection_log = Channel.empty()
 
-        ch_input = ch_reads_with_index.map { it[0,1,2,3] }  // drop aligner val
-
         if (params.aligner == 'strobealign') {
-            STROBEALIGN(ch_input)
+            // strobealign: use combined reference for cross-sample BAM compatibility
+            ch_sa_input = ch_reads_for_mapping.combine(ch_combined_fna)
+            STROBEALIGN(ch_sa_input)
             ch_raw_bam = STROBEALIGN.out.bam
         } else if (params.aligner == 'bwamem2') {
-            BWAMEM2(ch_input)
+            BWAMEM2(ch_reads_with_index.map { it[0,1,2,3] })
             ch_raw_bam = BWAMEM2.out.bam
         } else {
-            BOWTIE2(ch_input)
+            BOWTIE2(ch_reads_with_index.map { it[0,1,2,3] })
             ch_raw_bam = BOWTIE2.out.bam
         }
     }
@@ -110,18 +120,19 @@ workflow MGE_ABUNDANCE {
             [bams, bais]
         }
 
-    // Use first sample's mge_fna as the shared reference for CoverM
-    ch_mge_fna_single = ch_mge_fna.map { sample_id, fna -> fna }.first()
+    // Collect per-sample phage/plasmid FNAs for CoverM contig-level filtering
+    ch_phage_fna_all   = ch_phage_fna  .map { sample_id, fna -> fna }.collect()
+    ch_plasmid_fna_all = ch_plasmid_fna.map { sample_id, fna -> fna }.collect()
 
     COVERM_PHAGE(
         ch_sorted_bams.map { it[0] },
         ch_sorted_bams.map { it[1] },
-        ch_mge_fna_single
+        ch_phage_fna_all
     )
     COVERM_PLASMID(
         ch_sorted_bams.map { it[0] },
         ch_sorted_bams.map { it[1] },
-        ch_mge_fna_single
+        ch_plasmid_fna_all
     )
 
     emit:

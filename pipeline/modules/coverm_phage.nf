@@ -7,7 +7,7 @@ process COVERM_PHAGE {
     input:
     path bam_files   // collected sorted BAMs from all samples (*.bam)
     path bai_files   // corresponding .bai index files
-    path mge_fna     // merged MGE reference (for --genome-fasta-files if needed)
+    path mge_fna     // collected per-sample virus_sequences.fna files for contig ID filtering
 
     output:
     path "phage_abundance.tsv", emit: abundance
@@ -15,19 +15,20 @@ process COVERM_PHAGE {
 
     script:
     """
-    coverm genome \
+    # Extract phage contig IDs from all per-sample virus FNAs
+    cat ${mge_fna} | grep "^>" | sed 's/^>//' | cut -d' ' -f1 > phage_ids.txt
+
+    coverm contig \
         --bam-files ${bam_files} \
-        --genome-fasta-files ${mge_fna} \
-        --genome-fasta-extension fna \
         --methods rpkm tpm covered_fraction \
         --min-read-percent-identity ${params.coverm_min_identity_phage} \
         --threads ${task.cpus} \
         --output-file phage_abundance_raw.tsv \
         2> coverm_phage.log
 
-    # Keep only phage contigs (headers contain 'virus' from geNomad naming)
+    # Keep only phage contigs
     head -1 phage_abundance_raw.tsv > phage_abundance.tsv
-    grep -i 'virus\|phage' phage_abundance_raw.tsv >> phage_abundance.tsv || true
+    grep -Ff phage_ids.txt phage_abundance_raw.tsv >> phage_abundance.tsv || true
     """
 
     stub:

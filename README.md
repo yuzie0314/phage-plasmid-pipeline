@@ -67,7 +67,7 @@ sample_B,s3://bucket/B_R1.fastq.gz,s3://bucket/B_R2.fastq.gz,s3://bucket/B_conti
 | `--reads_mode` | `raw` | `raw` / `host_removed` / `trimmed_host_removed` |
 | `--host_genome_bitmask` | — | Absolute path to hg38 `.bitmask` FILE (bmtagger) |
 | `--host_genome_srprism` | — | Absolute path to srprism index PREFIX, e.g. `/nfs/hg38_bmtagger/hg38.srprism` |
-| `--singularity_bind_paths` | — | Comma-separated NFS paths to bind into containers, e.g. `/nfs,/scratch` |
+| `--singularity_bind_paths` | `/fsx` | Comma-separated NFS paths to bind into containers. Defaults to `/fsx` for AWS FSx; override for other mount points, e.g. `/nfs,/scratch` |
 | `--aligner` | `auto` | `auto` / `strobealign` / `bwamem2` / `bowtie2` |
 | `--min_contig_length` | `4000` | Minimum contig length before geNomad |
 | `--run_provirus` | `false` | Enable provirus detection |
@@ -195,6 +195,59 @@ nextflow run pipeline/main.nf \
 > validate FSx mounting, Singularity, and channel logic end-to-end without needing the
 > bmtagger database. Once that passes, rerun with `reads_mode = 'host_removed'` and
 > the full hg38 index to validate the high-memory path.
+
+---
+
+## Benchmark
+
+Tested on **EC2 r6i.xlarge** (4 vCPU / 32 GB RAM), 3 samples (`B14AML_FTSG002A/B/C`), on-demand pricing ~$0.252/hr (us-east-1).
+Resources capped to 4 CPU / 24 GB via `test_local.config` for local testing; production should use `r6i.2xlarge` or larger with the default `base.config`.
+
+### Per-module timing
+
+| Module | `raw` | `host_removed` | `trimmed_host_removed` | Notes |
+|---|---|---|---|---|
+| FILTER_CONTIGS | ~2s × 3 | cached | ~2s × 3 | |
+| GENOMAD | first run only | storeDir skip | storeDir skip | shared across all modes via `storeDir` |
+| MERGE_MGE | ~0.5s × 3 | cached | ~0.5s × 3 | |
+| BUILD_INDEX | ~3s × 3 | cached | ~3s × 3 | |
+| QC_TRIM (fastp) | — | — | 4–5 min × 3 | trimmed_host_removed only |
+| **REMOVE_HOST_READS (bmtagger)** | — | **2–3 h × 3 sequential** | **2–3 h × 3 sequential** | bottleneck; hg38 bitmask ~24 GB RAM |
+| DETECT_READ_LENGTH | ~2s × 3 | ~1s × 3 | ~1s × 3 | |
+| STROBEALIGN | 6–8 min × 3 | 4–6 min × 3 | 4–6 min × 3 | reads are smaller after host removal |
+| SAMTOOLS_SORT | 4–7 min × 3 | 3–5 min × 3 | 3–5 min × 3 | |
+| SAMTOOLS_FLAGSTAT | 8–15s × 3 | 8–12s × 3 | 8–12s × 3 | |
+| COVERM_PHAGE | ~1 min | ~42s | ~45s | |
+| COVERM_PLASMID | ~1 min | ~47s | ~41s | |
+| **Total wall time** | **~33 min** | **~8 h 25 min** | **~8 h 12 min** | |
+| **Estimated cost** | **~$0.14** | **~$2.12** | **~$2.07** | r6i.xlarge on-demand |
+
+> bmtagger results are cached per `reads_mode` via `storeDir` — re-runs within the same mode skip host removal automatically.
+
+### reads_mode comparison (RPKM, n=3 samples)
+
+Ground truth: `trimmed_host_removed`. Pearson r computed on log₁₀(RPKM); Spearman ρ on raw RPKM. Detection threshold: RPKM > 1.0.
+
+#### Correlation
+
+| Comparison | Phage Pearson r | Phage Spearman ρ | Plasmid Pearson r | Plasmid Spearman ρ |
+|---|---|---|---|---|
+| raw vs host_removed | 0.996–0.997 | 0.998 | 0.986–0.992 | 0.994 |
+| raw vs trimmed_host_removed | 0.985–0.990 | 0.997 | 0.982–0.989 | 0.994 |
+| host_removed vs trimmed_host_removed | 0.992–0.995 | 0.997 | **0.999** | **0.999** |
+
+#### Detection accuracy vs trimmed_host_removed
+
+| Mode | MGE type | Precision | Recall | Specificity |
+|---|---|---|---|---|
+| raw | phage | 0.999–1.000 | 0.994–1.000 | 0.941–1.000 |
+| raw | plasmid | 0.997–0.999 | 0.998–1.000 | 0.933–0.984 |
+| host_removed | phage | 0.991–1.000 | 0.997–1.000 | 0.941–1.000 |
+| host_removed | plasmid | 0.996–1.000 | 0.999–1.000 | 0.949–1.000 |
+
+All three modes show extremely high concordance (Pearson r > 0.98, precision > 0.99). Host removal has minimal impact on detected MGEs for this dataset; its necessity depends on the level of host DNA contamination in the input reads.
+
+Full results and scatter plots: `analysis/compare_modes.py`
 
 ---
 

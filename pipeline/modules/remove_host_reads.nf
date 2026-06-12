@@ -2,6 +2,7 @@ process REMOVE_HOST_READS {
     tag "${sample_id}"
     label 'high'   // hg38 bitmask index loading requires ~24 GB RAM
 
+    storeDir   "${projectDir}/../results/.bmtagger_storeDir/${params.reads_mode}/${sample_id}"
     publishDir "${params.outdir}/logs", mode: 'copy', pattern: '*.log'
 
     input:
@@ -21,11 +22,13 @@ process REMOVE_HOST_READS {
     zcat ${r1} > r1.fastq
     zcat ${r2} > r2.fastq
 
+    mkdir -p tmp_bmtagger
     bmtagger.sh \
         -b ${bitmask_file} \
         -x ${srprism_prefix} \
         -T tmp_bmtagger \
         -q 1 \
+        -X \
         -1 r1.fastq \
         -2 r2.fastq \
         -o host_removed \

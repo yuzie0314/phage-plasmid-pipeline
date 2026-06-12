@@ -15,7 +15,7 @@ From: ubuntu:22.04
         && rm -rf /var/lib/apt/lists/*
 
     # BMTagger binaries from NCBI FTP
-    for bin in bmtagger.sh bmfilter srprism; do
+    for bin in bmtagger.sh bmfilter srprism extract_fullseq; do
         wget -q "https://ftp.ncbi.nlm.nih.gov/pub/agarwala/bmtagger/${bin}" \
              -O /usr/local/bin/${bin}
         chmod +x /usr/local/bin/${bin}

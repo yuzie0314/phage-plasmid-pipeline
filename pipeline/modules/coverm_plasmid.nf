@@ -15,19 +15,20 @@ process COVERM_PLASMID {
 
     script:
     """
-    coverm genome \
+    # Extract plasmid contig IDs from all per-sample plasmid FNAs
+    cat ${mge_fna} | grep "^>" | sed 's/^>//' | cut -d' ' -f1 > plasmid_ids.txt
+
+    coverm contig \
         --bam-files ${bam_files} \
-        --genome-fasta-files ${mge_fna} \
-        --genome-fasta-extension fna \
         --methods rpkm tpm covered_fraction \
         --min-read-percent-identity ${params.coverm_min_identity_plasmid} \
         --threads ${task.cpus} \
         --output-file plasmid_abundance_raw.tsv \
         2> coverm_plasmid.log
 
-    # Keep only plasmid contigs (headers contain 'plasmid' from geNomad naming)
+    # Keep only plasmid contigs
     head -1 plasmid_abundance_raw.tsv > plasmid_abundance.tsv
-    grep -i 'plasmid' plasmid_abundance_raw.tsv >> plasmid_abundance.tsv || true
+    grep -Ff plasmid_ids.txt plasmid_abundance_raw.tsv >> plasmid_abundance.tsv || true
     """
 
     stub:

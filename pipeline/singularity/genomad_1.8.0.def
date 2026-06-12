@@ -6,5 +6,9 @@ From: antoniopcamargo/genomad:1.8.0
     tool       genomad
     version    1.8.0
 
+%environment
+    export PATH="/opt/conda/bin:$PATH"
+
 %post
+    export PATH="/opt/conda/bin:$PATH"
     genomad --version

@@ -2,6 +2,10 @@ process GENOMAD {
     tag "${sample_id}"
     label 'medium'
 
+    // geNomad runs on contigs (assembly), independent of reads_mode.
+    // Use a shared storeDir so results are reused across all reads_mode runs.
+    storeDir "${projectDir}/../results/.genomad_storeDir"
+
     publishDir "${params.outdir}/genomad/${sample_id}", mode: 'copy', pattern: '*_summary.tsv'
     publishDir "${params.outdir}/genomad/${sample_id}", mode: 'copy', pattern: '*_sequences.fna'
     publishDir "${params.outdir}/annotation",           mode: 'copy', pattern: '*_genomad_annotation.tsv'
@@ -40,11 +44,12 @@ process GENOMAD {
        ${sample_id}_provirus_sequences.fna 2>/dev/null || true
 
     # Flatten geNomad output paths to flat files with sample_id prefix
-    find genomad_out -name '*virus_summary.tsv'    | head -1 | xargs -I{} cp {} ${sample_id}_virus_summary.tsv
-    find genomad_out -name '*plasmid_summary.tsv'  | head -1 | xargs -I{} cp {} ${sample_id}_plasmid_summary.tsv
-    find genomad_out -name '*virus.fna'     ! -name '*provirus*' | head -1 | xargs -I{} cp {} ${sample_id}_virus_sequences.fna
-    find genomad_out -name '*plasmid.fna'          | head -1 | xargs -I{} cp {} ${sample_id}_plasmid_sequences.fna
-    find genomad_out -name '*annotation*'          | head -1 | xargs -I{} cp {} ${sample_id}_genomad_annotation.tsv
+    find . -name '*virus_summary.tsv'    | head -1 | xargs -I{} cp {} ${sample_id}_virus_summary.tsv
+    find . -name '*plasmid_summary.tsv'  | head -1 | xargs -I{} cp {} ${sample_id}_plasmid_summary.tsv
+    find . -name '*virus.fna'     ! -name '*provirus*' | head -1 | xargs -I{} cp {} ${sample_id}_virus_sequences.fna
+    find . -name '*plasmid.fna'          | head -1 | xargs -I{} cp {} ${sample_id}_plasmid_sequences.fna
+    ln genomad_out/${filtered_contigs.baseName}_annotate/${filtered_contigs.baseName}_genes.tsv \
+       ${sample_id}_genomad_annotation.tsv
     """
 
     stub:
