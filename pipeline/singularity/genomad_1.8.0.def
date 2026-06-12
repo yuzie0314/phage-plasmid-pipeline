@@ -10,5 +10,7 @@ From: antoniopcamargo/genomad:1.8.0
     export PATH="/opt/conda/bin:$PATH"
 
 %post
+    apt-get update -qq && apt-get install -y --no-install-recommends procps && rm -rf /var/lib/apt/lists/* || \
+    conda install -y -c conda-forge procps-ng || true
     export PATH="/opt/conda/bin:$PATH"
     genomad --version

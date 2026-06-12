@@ -12,6 +12,7 @@ From: ubuntu:22.04
         wget \
         ca-certificates \
         ncbi-blast+ \
+        procps \
         && rm -rf /var/lib/apt/lists/*
 
     # BMTagger binaries from NCBI FTP

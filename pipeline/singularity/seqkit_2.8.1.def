@@ -7,6 +7,7 @@ From: mambaorg/micromamba:1.5.8
     version    2.8.1
 
 %post
+    apt-get update -qq && apt-get install -y --no-install-recommends procps && rm -rf /var/lib/apt/lists/*
     export MAMBA_ROOT_PREFIX=/opt/conda
     /usr/bin/micromamba install -y -n base \
         -c conda-forge -c bioconda \
