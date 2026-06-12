@@ -247,7 +247,12 @@ Ground truth: `trimmed_host_removed`. Pearson r computed on log₁₀(RPKM); Spe
 
 All three modes show extremely high concordance (Pearson r > 0.98, precision > 0.99). Host removal has minimal impact on detected MGEs for this dataset; its necessity depends on the level of host DNA contamination in the input reads.
 
-Full results and scatter plots: `analysis/compare_modes.py`
+| Phage scatter plots | Plasmid scatter plots |
+|---|---|
+| ![Phage comparison](analysis/test_results/compare_modes_phage.png) | ![Plasmid comparison](analysis/test_results/compare_modes_plasmid.png) |
+
+Full correlation and classification tables: [`analysis/test_results/`](analysis/test_results/)
+Reproduction script: [`analysis/compare_modes.py`](analysis/compare_modes.py)
 
 ---
 
