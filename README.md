@@ -80,6 +80,11 @@ sample_B,s3://bucket/B_R1.fastq.gz,s3://bucket/B_R2.fastq.gz,s3://bucket/B_conti
 
 ```
 results/
+├── pipeline_info/
+│   ├── timeline.html          # per-process wall-time Gantt chart
+│   ├── report.html            # resource usage (CPU, memory, I/O) per task
+│   ├── trace.tsv              # raw task-level metrics
+│   └── dag.html               # pipeline DAG
 ├── genomad/{sample_id}/
 │   ├── {sample_id}_virus_summary.tsv
 │   ├── {sample_id}_plasmid_summary.tsv
