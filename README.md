@@ -222,15 +222,15 @@ Measured from `pipeline_info/trace.tsv` (raw mode) and `storeDir` file timestamp
 | MERGE_MGE | <1 s × 3 | <1 s × 3 | <1 s × 3 | |
 | BUILD_INDEX | ~3 s × 3 | ~3 s × 3 | ~3 s × 3 | |
 | QC_TRIM (fastp) | — | — | pending | trimmed_host_removed only |
-| **REMOVE_HOST_READS (bmtagger)** | — | **~2h 14 min × 3** | **~2h 14 min × 3** | bottleneck; sequential; hg38 bitmask ~24 GB RAM |
-| DETECT_READ_LENGTH | ~2.3 s × 3 | ~2.3 s × 3 | ~2.3 s × 3 | parallel |
-| STROBEALIGN | 6–8 min × 3 | pending | pending | sequential (4 vCPU constraint) |
-| SAMTOOLS_SORT | 5.5–7 min × 3 | pending | pending | |
-| SAMTOOLS_FLAGSTAT | 10–22 s × 3 | pending | pending | |
-| COVERM_PHAGE | 1m 6s | pending | pending | all BAMs collected before CoverM |
-| COVERM_PLASMID | 1m 15s | pending | pending | |
-| **Total wall time** | **~1h 47 min** | **~7h 20 min** (est.) | pending | |
-| **Estimated cost** | **~$0.45** | **~$1.85** (est.) | pending | r6i.xlarge @ $0.252/hr |
+| **REMOVE_HOST_READS (bmtagger)** | — | **2h 14m / 2h 43m / 3h 18m** | pending | bottleneck; sequential; hg38 bitmask ~24 GB RAM |
+| DETECT_READ_LENGTH | ~2.3 s × 3 | ~0.9 s × 3 | pending | parallel; faster after host removal |
+| STROBEALIGN | 6–8 min × 3 | 3m 45s–5m 23s × 3 | pending | sequential; fewer reads after host removal |
+| SAMTOOLS_SORT | 5.5–7 min × 3 | 3–5.5 min × 3 | pending | |
+| SAMTOOLS_FLAGSTAT | 10–22 s × 3 | 6–17 s × 3 | pending | |
+| COVERM_PHAGE | 1m 6s | 42s | pending | all BAMs collected before CoverM |
+| COVERM_PLASMID | 1m 15s | 50s | pending | |
+| **Total wall time** | **~1h 47 min** | **~8h 40 min** | pending | |
+| **Estimated cost** | **~$0.45** | **~$2.19** | pending | r6i.xlarge @ $0.252/hr |
 
 > GENOMAD runs once and caches to `results/.genomad_storeDir/`; all subsequent runs (any `reads_mode`) skip it automatically.
 > bmtagger outputs are cached per `reads_mode` in `results/.bmtagger_storeDir/` — re-runs within the same mode skip host removal.
