@@ -221,16 +221,16 @@ Measured from `pipeline_info/trace.tsv` (raw mode) and `storeDir` file timestamp
 | **GENOMAD** | **~72 min total** (first run only) | storeDir skip | storeDir skip | sequential: ~28 / 24 / 19 min per sample; shared storeDir across all modes |
 | MERGE_MGE | <1 s × 3 | <1 s × 3 | <1 s × 3 | |
 | BUILD_INDEX | ~3 s × 3 | ~3 s × 3 | ~3 s × 3 | |
-| QC_TRIM (fastp) | — | — | pending | trimmed_host_removed only |
-| **REMOVE_HOST_READS (bmtagger)** | — | **2h 14m / 2h 43m / 3h 18m** | pending | bottleneck; sequential; hg38 bitmask ~24 GB RAM |
-| DETECT_READ_LENGTH | ~2.3 s × 3 | ~0.9 s × 3 | pending | parallel; faster after host removal |
-| STROBEALIGN | 6–8 min × 3 | 3m 45s–5m 23s × 3 | pending | sequential; fewer reads after host removal |
-| SAMTOOLS_SORT | 5.5–7 min × 3 | 3–5.5 min × 3 | pending | |
-| SAMTOOLS_FLAGSTAT | 10–22 s × 3 | 6–17 s × 3 | pending | |
-| COVERM_PHAGE | 1m 6s | 42s | pending | all BAMs collected before CoverM |
-| COVERM_PLASMID | 1m 15s | 50s | pending | |
-| **Total wall time** | **~1h 47 min** | **~8h 40 min** | pending | |
-| **Estimated cost** | **~$0.45** | **~$2.19** | pending | r6i.xlarge @ $0.252/hr |
+| QC_TRIM (fastp) | — | — | 3m 53s–4m 41s × 3 | trimmed_host_removed only; sequential |
+| **REMOVE_HOST_READS (bmtagger)** | — | **2h 14m / 2h 43m / 3h 18m** | **2h 8m / 2h 36m / 3h 16m** | bottleneck; sequential; hg38 bitmask ~24 GB RAM |
+| DETECT_READ_LENGTH | ~2.3 s × 3 | ~0.9 s × 3 | ~0.9 s × 3 | parallel; faster after host removal |
+| STROBEALIGN | 6–8 min × 3 | 3m 45s–5m 23s × 3 | 3m 41s–5m 15s × 3 | sequential; fewer reads after host removal |
+| SAMTOOLS_SORT | 5.5–7 min × 3 | 3–5.5 min × 3 | 3.5–5 min × 3 | |
+| SAMTOOLS_FLAGSTAT | 10–22 s × 3 | 6–17 s × 3 | 9–12 s × 3 | |
+| COVERM_PHAGE | 1m 6s | 42s | 42s | all BAMs collected before CoverM |
+| COVERM_PLASMID | 1m 15s | 50s | 45s | |
+| **Total wall time** | **~1h 47 min** | **~8h 40 min** | **~8h 36 min** | |
+| **Estimated cost** | **~$0.45** | **~$2.19** | **~$2.17** | r6i.xlarge @ $0.252/hr |
 
 > GENOMAD runs once and caches to `results/.genomad_storeDir/`; all subsequent runs (any `reads_mode`) skip it automatically.
 > bmtagger outputs are cached per `reads_mode` in `results/.bmtagger_storeDir/` — re-runs within the same mode skip host removal.
