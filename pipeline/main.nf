@@ -18,6 +18,9 @@ def validate_params() {
                   "       Provide the srprism index PREFIX (no extension), e.g. /nfs/hg38_bmtagger/hg38.srprism"
         if (!file(params.host_genome_bitmask).exists())
             error "ERROR: --host_genome_bitmask file not found: ${params.host_genome_bitmask}"
+        if (!file(params.host_genome_srprism + ".amp").exists())
+            error "ERROR: --host_genome_srprism index not found: ${params.host_genome_srprism}.amp\n" +
+                  "       Expected files: ${params.host_genome_srprism}.amp/.idx/.map/.pmp/.rmp/.ssd"
     }
 
     def valid_modes    = ['raw', 'host_removed', 'trimmed_host_removed']

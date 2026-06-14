@@ -3,8 +3,9 @@ process GENOMAD {
     label 'medium'
 
     // geNomad runs on contigs (assembly), independent of reads_mode.
-    // Use a shared storeDir so results are reused across all reads_mode runs.
-    storeDir "${projectDir}/../results/.genomad_storeDir"
+    // Include min_contig_length in the storeDir path so changing the filter
+    // parameter correctly triggers a re-run rather than reusing stale results.
+    storeDir "${projectDir}/../results/.genomad_storeDir/minlen_${params.min_contig_length}"
 
     publishDir "${params.outdir}/genomad/${sample_id}", mode: 'copy', pattern: '*_summary.tsv'
     publishDir "${params.outdir}/genomad/${sample_id}", mode: 'copy', pattern: '*_sequences.fna'
