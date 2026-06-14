@@ -67,7 +67,8 @@ sample_B,s3://bucket/B_R1.fastq.gz,s3://bucket/B_R2.fastq.gz,s3://bucket/B_conti
 | `--reads_mode` | `raw` | `raw` / `host_removed` / `trimmed_host_removed` |
 | `--host_genome_bitmask` | — | Absolute path to hg38 `.bitmask` FILE (bmtagger) |
 | `--host_genome_srprism` | — | Absolute path to srprism index PREFIX, e.g. `/nfs/hg38_bmtagger/hg38.srprism` |
-| `--singularity_bind_paths` | `/fsx` | Comma-separated NFS paths to bind into containers. Defaults to `/fsx` for AWS FSx; override for other mount points, e.g. `/nfs,/scratch` |
+| `--singularity_bind_paths` | `null` | Comma-separated NFS/FSx paths to bind into containers, e.g. `/fsx` or `/nfs,/scratch`. Required when `singularity.autoMounts` cannot detect your mount point |
+| `--fastp_extra_args` | `''` | Extra fastp flags appended to QC_TRIM (e.g. `'--cut_right --length_required 50'`). If changed, delete `results/.bmtagger_storeDir/trimmed_host_removed/` to invalidate the bmtagger cache |
 | `--aligner` | `auto` | `auto` / `strobealign` / `bwamem2` / `bowtie2` |
 | `--min_contig_length` | `4000` | Minimum contig length before geNomad |
 | `--run_provirus` | `false` | Enable provirus detection |
