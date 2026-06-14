@@ -6,8 +6,8 @@ include { BWAMEM2           } from '../modules/bwamem2'
 include { BOWTIE2           } from '../modules/bowtie2'
 include { SAMTOOLS_SORT     } from '../modules/samtools_sort'
 include { SAMTOOLS_FLAGSTAT } from '../modules/samtools_flagstat'
-include { COVERM_PHAGE      } from '../modules/coverm_phage'
-include { COVERM_PLASMID    } from '../modules/coverm_plasmid'
+include { COVERM_MGE as COVERM_PHAGE   } from '../modules/coverm_mge'
+include { COVERM_MGE as COVERM_PLASMID } from '../modules/coverm_mge'
 
 workflow MGE_ABUNDANCE {
 
@@ -127,12 +127,16 @@ workflow MGE_ABUNDANCE {
     COVERM_PHAGE(
         ch_sorted_bams.map { it[0] },
         ch_sorted_bams.map { it[1] },
-        ch_phage_fna_all
+        ch_phage_fna_all,
+        'phage',
+        params.coverm_min_identity_phage
     )
     COVERM_PLASMID(
         ch_sorted_bams.map { it[0] },
         ch_sorted_bams.map { it[1] },
-        ch_plasmid_fna_all
+        ch_plasmid_fna_all,
+        'plasmid',
+        params.coverm_min_identity_plasmid
     )
 
     emit:

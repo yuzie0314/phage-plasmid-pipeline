@@ -2,6 +2,9 @@ process REMOVE_HOST_READS {
     tag "${sample_id}"
     label 'high'   // hg38 bitmask index loading requires ~24 GB RAM
 
+    // storeDir is keyed by reads_mode + sample_id only.
+    // If you change params.fastp_extra_args for trimmed_host_removed, delete
+    // results/.bmtagger_storeDir/trimmed_host_removed/ to force a re-run.
     storeDir   "${projectDir}/../results/.bmtagger_storeDir/${params.reads_mode}/${sample_id}"
     publishDir "${params.outdir}/logs", mode: 'copy', pattern: '*.log'
 

@@ -14,6 +14,7 @@ process QC_TRIM {
     path "${sample_id}_fastp.log",  emit: log
 
     script:
+    def extra = params.fastp_extra_args ?: ''
     """
     fastp \
         --in1 ${r1} \
@@ -23,6 +24,7 @@ process QC_TRIM {
         --json ${sample_id}_fastp.json \
         --thread ${task.cpus} \
         --detect_adapter_for_pe \
+        ${extra} \
         2> ${sample_id}_fastp.log
     """
 

@@ -28,7 +28,11 @@ workflow MGE_IDENTIFICATION {
             }
     }
 
-    def build_aligner = (params.aligner == 'auto') ? 'bwamem2' : params.aligner
+    // In auto mode, strobealign (≥150 bp reads) is the most common path and
+    // indexes on-the-fly from the FNA — no pre-built index needed. Build a
+    // strobealign "index" (FNA copy, <1 s) so BUILD_INDEX always produces output.
+    // BWAMEM2 and BOWTIE2 detect the FNA at runtime and build their own index.
+    def build_aligner = (params.aligner == 'auto') ? 'strobealign' : params.aligner
 
     MERGE_MGE(ch_merge_input)
 

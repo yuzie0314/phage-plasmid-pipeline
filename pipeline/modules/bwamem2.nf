@@ -12,13 +12,21 @@ process BWAMEM2 {
     path "${sample_id}_bwamem2.log",                emit: log
 
     script:
-    // Derive the index prefix from the .amb file (always present after bwa-mem2 index)
+    // Use pre-built index (.amb present) or build on-the-fly from a FNA reference.
+    // Pre-built: --aligner bwamem2 (BUILD_INDEX ran bwa-mem2 index beforehand).
+    // On-the-fly: --aligner auto (BUILD_INDEX produced a FNA copy; index built here).
     """
-    idx_prefix=\$(ls *.amb 2>/dev/null | sed 's/\\.amb//' | head -1)
+    if ls *.amb 2>/dev/null | grep -q .; then
+        idx_prefix=\$(ls *.amb | sed 's/\\.amb//' | head -1)
+    else
+        fna=\$(ls *.fna 2>/dev/null | head -1)
+        bwa-mem2 index -p bwamem2_idx "\${fna}" 2>> ${sample_id}_bwamem2.log
+        idx_prefix=bwamem2_idx
+    fi
     bwa-mem2 mem \
         -t ${task.cpus} \
-        \${idx_prefix} ${r1} ${r2} \
-        2> ${sample_id}_bwamem2.log \
+        "\${idx_prefix}" ${r1} ${r2} \
+        2>> ${sample_id}_bwamem2.log \
     | samtools view -bS -o ${sample_id}.bam
     """
 
